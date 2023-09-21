@@ -34,7 +34,7 @@ const GalleryCards = () => {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto mb-20">
       <ImageSearch searchText={(text) => setTerm(text)} />
 
       {isLoading ? (
@@ -43,12 +43,12 @@ const GalleryCards = () => {
         </div>
       ) : (
         <DragDropContext onDragEnd={handleImageReorder}>
-          <Droppable droppableId="image-gallery" direction="horizontal">
+          <Droppable droppableId="image-gallery" >
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6"
               >
                 {images.map((image, index) => (
                   <Draggable
@@ -65,6 +65,7 @@ const GalleryCards = () => {
                         <Image
                           src={image.webformatURL}
                           alt=""
+                          className='w-full h-[300px]'
                           width={300}
                           height={300}
                         />
