@@ -1,54 +1,98 @@
-'use client'
+"use client"
 
 import React, { useState, useEffect } from 'react';
-import ImageCard from './imageCard';
+//import ImageCard from './imageCard';
 import ImageSearch from './imageSearch';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-
+import Image from "next/image"
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const GalleryCards = () => {
-    const [images, setImages] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [term, setTerm] = useState('');
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [term, setTerm] = useState('');
 
-    useEffect(() => {
-        fetch(`https://pixabay.com/api/?key=39569650-5cd0198dcddefdb4872e20206&q=${term}&image_type=photo&pretty=true`)
-            .then(res => res.json())
-            .then(data => {
-                setImages(data.hits);
-                setIsLoading(false);
-            })
-            .catch(err => console.log(err));
-    }, [term]);
+  useEffect(() => {
+    fetch(`https://pixabay.com/api/?key=39569650-5cd0198dcddefdb4872e20206&q=${term}&image_type=photo&pretty=true`)
+      .then((res) => res.json())
+      .then((data) => {
+        setImages(data.hits);
+        setIsLoading(false);
+      })
+      .catch((err) => console.log(err));
+  }, [term]);
 
-    return (
-        <div className="container mx-auto">
-            <ImageSearch searchText={(text) => setTerm(text)} />
+  const handleImageReorder = (result) => {
+    if (!result.destination) {
+      return;
+    }
 
-            {isLoading ? (
-                <div className="text-center mt-32">
-                  
-                    <div className="spinner"></div> 
-                </div>
-            ) : (
-              <DndProvider backend={HTML5Backend}>
-                   <div>
-                    {images.length === 0 ? (
-                        <h1 className="text-5xl text-center mx-auto mt-32">Sorry No Images Found</h1>
-                    ) : (
-                        <div className="grid grid-cols-3 gap-4">
-                            {images.map(image => (
-                                <ImageCard key={image.id} image={image} />
-                            ))}
-                        </div>
-                    )}
-                </div>
-              </DndProvider>
-              
-            )}
+    const reorderedImages = [...images];
+    const [reorderedImage] = reorderedImages.splice(result.source.index, 1);
+    reorderedImages.splice(result.destination.index, 0, reorderedImage);
+
+    setImages(reorderedImages);
+  };
+
+  return (
+    <div className="container mx-auto">
+      <ImageSearch searchText={(text) => setTerm(text)} />
+
+      {isLoading ? (
+        <div className="text-center mt-32">
+          <div className="spinner"></div>
         </div>
-    );
-}
+      ) : (
+        <DragDropContext onDragEnd={handleImageReorder}>
+          <Droppable droppableId="image-gallery" direction="horizontal">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="grid grid-cols-3 gap-4"
+              >
+                {images.map((image, index) => (
+                  <Draggable
+                    key={image.id}
+                    draggableId={image.id.toString()}
+                    index={index}
+                  >
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <Image
+                          src={image.webformatURL}
+                          alt=""
+                          width={300}
+                          height={300}
+                        />
+                        <div>Photo by {image.user}</div>
+                        <ul></ul>
+                        <div className="px-6 py-4">
+                          {/* Split the tags here */}
+                          {image.tags.split(',').map((tag, index) => (
+                            <span
+                              key={index}
+                              className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2"
+                            >
+                              #{tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      )}
+    </div>
+  );
+};
 
 export default GalleryCards;

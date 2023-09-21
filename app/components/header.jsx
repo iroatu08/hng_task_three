@@ -1,3 +1,5 @@
+
+
 import Link from 'next/link';
 import { UserButton, auth, useUser } from '@clerk/nextjs';
 
@@ -10,7 +12,7 @@ const Header = async ({ username }) => {
       <div className='flex items-center'>
         <Link href='/'>
           <div className='text-lg font-bold text-white uppercase'>
-            Clerk App
+            Prince Jayson App
           </div>
         </Link>
       </div>
